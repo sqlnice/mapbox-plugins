@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>经纬网格图层-3857</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="../mapbox-gl/mapbox-gl.js"></script>
+    <link href="../mapbox-gl/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        var vecUrl =
+            "http://t0.tianditu.com/vec_w/wmts?tk=e90d56e5a09d1767899ad45846b0cefd";
+        var cvaUrl =
+            "http://t0.tianditu.com/cva_w/wmts?tk=e90d56e5a09d1767899ad45846b0cefd";
+        //实例化source对象
+        var tdtVec = {
+            //类型为栅格瓦片
+            type: "raster",
+            tiles: [
+                //请求地址
+                vecUrl +
+                "&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=tiles",
+            ],
+            //分辨率
+            tileSize: 256,
+        };
+        var tdtCva = {
+            type: "raster",
+            tiles: [
+                cvaUrl +
+                "&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cva&STYLE=default&TILEMATRIXSET=w&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=tiles",
+            ],
+            tileSize: 256,
+        };
+        var map = new mapboxgl.Map({
+            hash: true,
+            renderWorldCopies: false,
+            container: "map", 
+            localIdeographFontFamily: '"Open Sans",Arial,sans-serif',
+            style: {
+                version: 8,
+                sources: {
+                    tdtVec: tdtVec,
+                    tdtCva: tdtCva,
+                },
+                layers: [
+                    {
+                        //图层id，要保证唯一性
+                        id: "tdtVec",
+                        //图层类型
+                        type: "raster",
+                        //数据源
+                        source: "tdtVec",
+                        //图层最小缩放级数
+                        minzoom: 0,
+                        //图层最大缩放级数
+                        maxzoom: 17,
+                    },
+                    {
+                        id: "tdtCva",
+                        type: "raster",
+                        source: "tdtCva",
+                        minzoom: 0,
+                        maxzoom: 17,
+                    },
+                ],
+                glyphs: "http://127.0.0.1/api/v1/font/luokung/{fontstack}/{range}.pbf"
+            },
+            center: [0, 0],
+            zoom: 0,
+        });
+
+        map.showTileBoundaries = true;
+        var glayer = null;
+        var bounds = [[121, 37], [158, 82]]
+        map.on("load", function () {
+            glayer = new mapboxgl.GraticuleLayer({
+                showLabel: true, showGrid: true
+                , showTick: true, bounds: bounds,
+                showBorder:true,
+                tickLength:8
+            });
+            glayer.addTo(map);
+        })
+        map.on("move", function () {
+            if (glayer) {
+                glayer.update();
+            }
+        })
+
+    </script>
+</body>
+
+</html>
